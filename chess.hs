@@ -234,7 +234,9 @@ win = undefined
 --MAHAD
 -- you take in a board and a move, then return a new board after the change
 makeMove :: Board -> Move -> Board
-makeMove = undefined
+makeMove board (fromSquare, toPos) = 
+    let updatedBoard = [(pos, piece) | (pos, piece) <- board, pos /= fst fromSquare]
+    in (toPos, snd fromSquare) : updatedBoard
 
 
 -- for the solver, not do yet
