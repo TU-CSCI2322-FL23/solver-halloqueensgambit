@@ -2,7 +2,7 @@ import Chess
 import Data.Char (toLower)
 import Moves
 
-
+{- edited text here-}
 toLowerString :: String -> String
 toLowerString = map toLower
 
