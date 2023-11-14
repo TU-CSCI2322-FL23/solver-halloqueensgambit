@@ -79,11 +79,3 @@ main :: IO ()
 main = do
   startTurn White initialBoard
 
-{-
-testPawn :: [((GHC.Types.Any, GHC.Types.Any), (PieceType, Side))]
-testPawn =
-  [ ((3, 2), (Pawn, White)),
-    ((1, 7), (Pawn, Black))
-  ]
-
-  -}
