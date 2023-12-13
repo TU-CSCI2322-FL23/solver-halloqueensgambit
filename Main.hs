@@ -26,7 +26,7 @@ recurReadInput game isInteractive depth = do
           if isInteractive
             then do
               putStrLn $ showPrettyGame gameAfterPlayerMove
-              putStrLn "Calculating solver move..."
+              putStrLn $ "Calculating solver move.." ++ "Depth: " ++ show depth
               let gameAfterSolverMove = makeSolverMove gameAfterPlayerMove depth
               startTurn gameAfterSolverMove isInteractive depth
             else startTurn gameAfterPlayerMove isInteractive depth
@@ -38,7 +38,7 @@ startTurn game@(board, sideOfPlayer, turnNum) isInteractive depth = do
   putStrLn $ showPrettyGame game
   case whoHasWon (board, sideOfPlayer, turnNum) of
     Nothing -> do
-      if  isInteractive then putStrLn $ "Depth: " ++ show depth else
+      if  isInteractive then putStrLn $ ("Enter move for " ++ (toLowerString (show sideOfPlayer)) ++ " (in format: d2 d4): ") else
         putStrLn ("Enter move for " ++ (toLowerString (show sideOfPlayer)) ++ " (in format: d2 d4): ")
       recurReadInput (board, sideOfPlayer, turnNum) isInteractive depth
     Just end -> case end of
@@ -55,10 +55,10 @@ startTwoPlayer game = startTurn game False 0
 determineDynamicDepth :: Game -> Int
 determineDynamicDepth game =
   case (length (gameMoveAssociation game)) of
-    n | n < 10 -> 8
-    n | n >= 10 && n < 20 -> 7
-    n | n >= 20 && n < 30 -> 6
-    n | n >= 30 -> 5
+    n | n < 10 -> 6
+    n | n >= 10 && n < 20 -> 5
+    n | n >= 20 && n < 30 -> 4
+    n | n >= 30 -> 4
 
 makeSolverMove :: Game -> Int -> Game
 makeSolverMove game depth =
