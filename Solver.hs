@@ -80,6 +80,11 @@ moveEstimate game@(_, player, turn) remDepth
       let ratingMoveAssociation = [(fst (moveEstimate nextGame (remDepth - 1)), Just nextMove) | (nextGame, nextMove) <- gameMoveAssociation game]
        in selectFor player ratingMoveAssociation
 
+countPositionsAtDepth :: Game -> Int -> Int
+countPositionsAtDepth game 0 = 1
+countPositionsAtDepth game currentDepth = 
+  sum [(countPositionsAtDepth nextGame (currentDepth - 1)) | (nextGame, _) <- gameMoveAssociation game]
+  
 selectFor :: Side -> [(Rating, Maybe Move)] -> (Rating, Maybe Move)
 selectFor _ [r] = r
 selectFor White (r : rs) =

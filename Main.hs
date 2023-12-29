@@ -56,11 +56,11 @@ startTwoPlayer game = startTurn game False 0
 -- MUST BE COMBINABLE WITH -D
 determineDynamicDepth :: Game -> Int
 determineDynamicDepth game =
-  case (length (gameMoveAssociation game)) of
-    n | n < 10 -> 8
-    n | n >= 10 && n < 20 -> 7
-    n | n >= 20 && n < 30 -> 6
-    n | n >= 30 -> 5
+  case div (countPositionsAtDepth game 4) (countPositionsAtDepth game 3) of
+    n | n < 5 -> 7
+    n | n >= 5 && n < 10 -> 6
+    n | n >= 10 && n < 20 -> 5
+    n | n > 20 -> 4
 
 checkOpenings :: Board -> IO ([String])
 checkOpenings board = do
