@@ -50,7 +50,7 @@ initialBoard =
        ]
 
 initialGame :: Game
-initialGame = (initialBoard, White, 50)
+initialGame = (initialBoard, White, 0)
 
 emptyBoard :: Board
 emptyBoard = []
@@ -143,7 +143,7 @@ allLegalMoves (board, side, _) =
 -- else return Just Tie or Just WinningSide side
 whoHasWon :: Game -> Maybe Winner
 whoHasWon (board, side, turn)
-  | length kingList == 2 && turn /= 0 = Nothing
+  | length kingList == 2 = Nothing
   | length kingList == 1 = Just (WinningSide winningSide)
   | otherwise = Just Tie
   where
@@ -158,15 +158,15 @@ makeMove (board, side, turn) move@((startPos, movingPiece), toPos)
   | otherwise =
       let updatedBoard = [(pos, piece) | (pos, piece) <- board, pos /= startPos, pos /= toPos]
        in case move of
-            (((_, 7), (Pawn, White)), (_, 8)) -> Just ((toPos, (Queen, White)) : updatedBoard, opponent side, turn - 1)
-            (((_, 2), (Pawn, Black)), (_, 1)) -> Just ((toPos, (Queen, Black)) : updatedBoard, opponent side, turn - 1)
-            _ -> Just ((toPos, movingPiece) : updatedBoard, opponent side, turn - 1)
+            (((_, 7), (Pawn, White)), (_, 8)) -> Just ((toPos, (Queen, White)) : updatedBoard, opponent side, turn + 1)
+            (((_, 2), (Pawn, Black)), (_, 1)) -> Just ((toPos, (Queen, Black)) : updatedBoard, opponent side, turn + 1)
+            _ -> Just ((toPos, movingPiece) : updatedBoard, opponent side, turn + 1)
 
 -- making a move without considering whether it is legal
 makeUnSafeMove :: Game -> Move -> Game
 makeUnSafeMove (board, side, turn) move@((startPos, movingPiece), toPos) =
   let updatedBoard = [(pos, piece) | (pos, piece) <- board, pos /= startPos, pos /= toPos]
    in case move of
-        (((_, 7), (Pawn, White)), (_, 8)) -> ((toPos, (Queen, White)) : updatedBoard, opponent side, turn - 1)
-        (((_, 2), (Pawn, Black)), (_, 1)) -> ((toPos, (Queen, Black)) : updatedBoard, opponent side, turn - 1)
-        _ -> ((toPos, movingPiece) : updatedBoard, opponent side, turn - 1)
+        (((_, 7), (Pawn, White)), (_, 8)) -> ((toPos, (Queen, White)) : updatedBoard, opponent side, turn + 1)
+        (((_, 2), (Pawn, Black)), (_, 1)) -> ((toPos, (Queen, Black)) : updatedBoard, opponent side, turn + 1)
+        _ -> ((toPos, movingPiece) : updatedBoard, opponent side, turn + 1)

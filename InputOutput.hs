@@ -43,7 +43,7 @@ showPrettyGame (board, side, turn) =
       separator = "   " ++ replicate (31) '-'
       coordinateLine = intercalate "   " ["", "a", "b", "c", "d", "e", "f", "g", "h"]
       prettyBoard = unlines (intersperse separator rows) ++ "\n " ++ coordinateLine
-   in "Current side: " ++ (show side) ++ "\n" ++ "Number of turns left: " ++ (show turn) ++ "\n" ++ prettyBoard
+   in "Current side: " ++ (show side) ++ "\n" ++ "Turn number: " ++ (show turn) ++ "\n" ++ prettyBoard
 
 intToLetter :: Int -> String
 intToLetter i =
