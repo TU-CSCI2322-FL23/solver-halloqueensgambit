@@ -1,7 +1,7 @@
 module InputOutput where
 
 import Chess
-import Data.Char (toLower)
+import Data.Char (toLower, toUpper)
 import Data.List (intercalate, intersperse)
 import Data.List.Split (splitOn)
 import Data.Maybe
@@ -10,7 +10,6 @@ import Solver
 import System.IO
 
 --                                            PRETTY PRINTING
-
 showPiecePretty :: Piece -> String
 showPiecePretty (Rook, Black) = " ♖ "
 showPiecePretty (Knight, Black) = " ♘ "
@@ -168,6 +167,49 @@ loadGame filepath = do
   let game = readGame gameContent
   return game
 
+-- read the FEN notation as a board
+readFENBoard :: String -> Board
+readFENBoard fenString = 
+  let rows = splitOn "/" fenString
+    in concat [readFENRow row rowNum 1 | (rowNum, row) <- zip [8, 7 .. 1] rows]
+
+-- rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+readFENRow :: String -> Int -> Int -> Board
+readFENRow [] _ _ = []
+readFENRow (p:rest) rowNum colNum = 
+  case stringToPiece [p] of 
+    Just piece -> [((colNum, rowNum), piece)] ++ readFENRow rest rowNum (colNum + 1)
+    Nothing -> 
+      case p of
+        '1' -> readFENRow rest rowNum (colNum + 1)
+        '2' -> readFENRow rest rowNum (colNum + 2)
+        '3' -> readFENRow rest rowNum (colNum + 3)
+        '4' -> readFENRow rest rowNum (colNum + 4)
+        '5' -> readFENRow rest rowNum (colNum + 5)
+        '6' -> readFENRow rest rowNum (colNum + 6)
+        '7' -> readFENRow rest rowNum (colNum + 7)
+        '8' -> []
+        _   -> error "Piece not recognized" 
+
+-- converts a board to a string based on the FEN board notation
+boardToFEN :: Board -> String
+boardToFEN board = intercalate "/" [rowToFEN (filter (\((column, row), piece) -> row == x) board) x 1 0 | x <- [8, 7 .. 1]]
+
+--converts a single row of a board to a FEN string
+rowToFEN :: Board -> Int -> Int -> Int -> String
+rowToFEN board _ 9 count = 
+  case count of 
+    0 -> ""
+    c -> (show c)
+rowToFEN board rowNum colNum count = 
+  let maybePiece = (lookup (colNum, rowNum) board) in
+    case maybePiece of
+      Nothing -> rowToFEN board rowNum (colNum + 1) (count + 1)
+      Just piece -> 
+        case count of 
+          0 -> (pieceToString maybePiece) ++ rowToFEN board rowNum (colNum + 1) 0
+          c -> (show c) ++ (pieceToString maybePiece) ++ rowToFEN board rowNum (colNum + 1) 0
+
 --                                        OUTPUTTING SOLVER RESULT
 
 putBestMove :: Game -> IO ()
@@ -225,12 +267,14 @@ readPos _ = Nothing
 readMove :: String -> Game -> Maybe Move
 readMove line (board, _, _) =
   let split :: [String]
-      split = filter (not . null) (words line)
+      split = let firstTwo = take 2 line
+                  rest = drop 2 line
+              in filter (not . null) [firstTwo, rest]
    in -- check if input is two strings
       case split of
         [first, sec] ->
           case readPos (toLowerString first, toLowerString sec) of
-            -- if the input format is not "e2 e4" --> return Nothing
+            -- if the input format is not "e2e4" --> return Nothing
             Nothing -> Nothing
             Just ((x1, y1), (x2, y2)) ->
               case lookup (x1, y1) board of

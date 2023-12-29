@@ -12,6 +12,7 @@ import Text.XHtml (start)
 recurReadInput :: Game -> Bool -> Int -> IO ()
 recurReadInput game isInteractive depth = do
   moveStr <- getLine
+  -- checking input validity
   case readMove moveStr game of
     Nothing -> do
       putStrLn "Invalid input. Please enter a valid input (in format: d2 d4): "
@@ -22,10 +23,12 @@ recurReadInput game isInteractive depth = do
         Nothing -> do
           putStrLn "This is not a valid move, try again: "
           recurReadInput game isInteractive depth
+        -- move can be made
         Just gameAfterPlayerMove -> do
           if isInteractive
             then do
               putStrLn $ showPrettyGame gameAfterPlayerMove
+              -- solver time
               putStrLn "Calculating solver move..."
               let gameAfterSolverMove = makeSolverMove gameAfterPlayerMove depth
               startTurn gameAfterSolverMove isInteractive depth
@@ -35,12 +38,11 @@ recurReadInput game isInteractive depth = do
 -- print the current turn's board and recursively ask for input
 startTurn :: Game -> Bool -> Int -> IO ()
 startTurn game@(board, sideOfPlayer, turnNum) isInteractive depth = do
-  putStrLn ""
-  putStrLn $ showPrettyGame game
+  putStrLn $ "\n" ++ showPrettyGame game
   case whoHasWon (board, sideOfPlayer, turnNum) of
     Nothing -> do
-      if  isInteractive then putStrLn $ "Depth: " ++ show depth else
-        putStrLn ("Enter move for " ++ (toLowerString (show sideOfPlayer)) ++ " (in format: d2 d4): ")
+      if isInteractive then putStrLn $ "Depth: " ++ show depth else
+        putStrLn ("Enter move for " ++ (toLowerString (show sideOfPlayer)) ++ " (in format: d2d4): ")
       recurReadInput (board, sideOfPlayer, turnNum) isInteractive depth
     Just end -> case end of
       WinningSide side -> putStrLn (show side ++ " is the winner!")
@@ -60,8 +62,16 @@ determineDynamicDepth game =
     n | n >= 20 && n < 30 -> 6
     n | n >= 30 -> 5
 
+checkOpenings :: Board -> IO ([String])
+checkOpenings board = do
+  contents <- readFile "openings.txt"
+  let openings = lines contents
+      fen = boardToFEN board
+      viableMoves = [moves | row <- openings, let position:moves = words row, position == (boardToFEN board)]
+  return (head viableMoves)
+
 makeSolverMove :: Game -> Int -> Game
-makeSolverMove game depth =
+makeSolverMove game depth = 
   if depth == 0 then let (rating, move) = moveEstimate game (determineDynamicDepth game)
                         in case move of
                               Just solver_move -> makeUnSafeMove game solver_move
@@ -73,7 +83,6 @@ makeSolverMove game depth =
 
 startInteractiveMode :: Game -> Int -> IO ()
 startInteractiveMode game depth = startTurn game True depth
-
 
 
 --                                                  FLAGS HANDLING
@@ -205,5 +214,3 @@ getDepthFromFlags :: [Flag] -> Game -> Maybe Int
 getDepthFromFlags [] game = Just (determineDynamicDepth game)
 getDepthFromFlags (Depth depth : _) game = depth
 getDepthFromFlags (_ : rest) game = getDepthFromFlags rest game
-
-
